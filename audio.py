@@ -10,7 +10,7 @@ class StreamJarvisTTS:
     def __init__(self, 
                  model_name='YatharthS/LuxTTS', 
                  device='mps', # mps or cpu
-                 prompt_audio='modules/sample.mp3', # sample voice of jarvis
+                 prompt_audio='sample.mp3', # sample voice of jarvis
                  rms=0.01, 
                  ref_duration=5,
                  t_shift=0.9,
@@ -45,7 +45,7 @@ class StreamJarvisTTS:
         if not text.strip():
             return
             
-        print("Generating audio...")
+        print("working out audio...")
         
         # Generate speech for the full text at once
         final_wav = self.lux_tts.generate_speech(
