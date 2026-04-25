@@ -1,6 +1,13 @@
 import os
+import sys
 import time
 import soundfile as sf
+
+# Add the current directory to sys.path so that 'zipvoice' can be imported correctly
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.append(current_dir)
+
 from zipvoice.luxvoice import LuxTTS
 
 class StreamJarvisTTS:
@@ -10,7 +17,7 @@ class StreamJarvisTTS:
     def __init__(self, 
                  model_name='YatharthS/LuxTTS', 
                  device='mps', # mps or cpu
-                 prompt_audio='sample.mp3', # sample voice of jarvis
+                 prompt_audio=os.path.join(os.path.dirname(__file__), 'sample.mp3'), # sample voice of jarvis
                  rms=0.01, 
                  ref_duration=5,
                  t_shift=0.9,
