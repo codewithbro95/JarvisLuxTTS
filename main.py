@@ -1,10 +1,26 @@
 from modules.audio import StreamJarvisTTS
 
-text = "My name is JARVIS, an advanced artificial intelligence designed to assist, analyze, and anticipate your needs with precision. All systems are now online and functioning within optimal parameters. I am fully synchronized and ready to provide real-time insights, manage tasks, and ensure seamless operation across all connected processes. How may I be of service?"
-
 # Initialize the StreamJarvisTTS engine
 # You can customize parameters here if needed, such as prompt_audio, rms, speed, etc.
 jarvisTTS = StreamJarvisTTS()
 
-# Stream the text in real-time
-jarvisTTS.speak(text)
+print("\nJARVIS TTS Engine initialized. All systems online.")
+print("Type 'quit' or 'exit' to stop.")
+
+while True:
+    try:
+        text = input("\nWhat should JARVIS say? > ").strip()
+        
+        if not text:
+            continue
+            
+        if text.lower() in ['quit', 'exit']:
+            print("Shutting down JARVIS audio TTS engine...")
+            break
+            
+        # Generate and play the audio
+        jarvisTTS.speak(text)
+        
+    except (KeyboardInterrupt, EOFError):
+        print("\nShutting down JARVIS...")
+        break
