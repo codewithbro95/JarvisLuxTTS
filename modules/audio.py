@@ -10,7 +10,7 @@ class StreamJarvisTTS:
     def __init__(self, 
                  model_name='YatharthS/LuxTTS', 
                  device='mps', # mps or cpu
-                 prompt_audio='modules/sample.mp3', # AI voice 
+                 prompt_audio='modules/sample.mp3', # sample voice of jarvis
                  rms=0.01, 
                  ref_duration=5,
                  t_shift=0.9,
