@@ -1,6 +1,6 @@
 # Jarvis Voice Module
 
-The dedicated Text-to-Speech (TTS) voice module for the overall [JARVIS](https://github.com/codewithbro95/JARVIS) project. 
+The dedicated Text-to-Speech (TTS) voice module for the overall [JARVIS](https://github.com/codewithbro95/J.A.R.V.I.S) project. 
 
 This repository is a customized adaptation of the highly efficient [LuxTTS by YatharthS](https://github.com/ysharma3501/LuxTTS). It serves as a lightweight, plug-and-play module built to provide high-quality tts for the larger JARVIS ecosystem.
 
