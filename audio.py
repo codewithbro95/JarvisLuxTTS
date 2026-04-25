@@ -2,9 +2,6 @@ import os
 import sys
 import time
 import soundfile as sf
-import re
-import threading
-import queue
 
 # Add the current directory to sys.path so that 'zipvoice' can be imported correctly
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -21,8 +18,8 @@ class StreamJarvisTTS:
                  model_name='YatharthS/LuxTTS', 
                  device='mps', # mps or cpu
                  prompt_audio=os.path.join(os.path.dirname(__file__), 'sample.mp3'), # sample voice of jarvis
-                 rms=0.2, 
-                 ref_duration=30,
+                 rms=0.01, 
+                 ref_duration=5,
                  t_shift=0.9,
                  speed=0.8,
                  return_smooth=False,
@@ -48,63 +45,36 @@ class StreamJarvisTTS:
         )
         print("Prompt encoded! TTS initialized.")
 
-    def _play_audio_worker(self):
-        """Worker thread that continuously plays audio files from the queue."""
-        while True:
-            file_path = self.audio_queue.get()
-            if file_path is None:  # Sentinel value to stop the thread
-                break
-            os.system(f"afplay {file_path}")
-            try:
-                os.remove(file_path)
-            except OSError:
-                pass
-            self.audio_queue.task_done()
-
     def speak(self, text):
         """
-        Splits text into chunks, generates audio for each chunk, and streams playback.
+        Generates audio for the entire text, saves it to a file, plays it, and deletes it.
         """
         if not text.strip():
             return
             
         print("working out audio...")
         
-        # Split text into sentences/chunks to stream generation and playback
-        # This regex splits by punctuation (. ! ? \n) while keeping the punctuation with the sentence
-        chunks = re.split(r'(?<=[.!?\n])\s+', text.strip())
-        chunks = [c.strip() for c in chunks if c.strip()]
+        # Generate speech for the full text at once
+        final_wav = self.lux_tts.generate_speech(
+            text, 
+            self.encoded_prompt, 
+            num_steps=self.num_steps,
+            t_shift=self.t_shift,
+            speed=self.speed,
+            return_smooth=self.return_smooth
+        )
+        final_wav = final_wav.numpy().squeeze()
         
-        if not chunks:
-            return
-
-        self.audio_queue = queue.Queue()
-        playback_thread = threading.Thread(target=self._play_audio_worker)
-        playback_thread.start()
-        
+        # Save to a temporary file inside the module's directory
         module_dir = os.path.dirname(os.path.abspath(__file__))
+        temp_file = os.path.join(module_dir, f"temp_speech_{int(time.time())}.wav")
+        sf.write(temp_file, final_wav, 48000)
         
-        for i, chunk in enumerate(chunks):
-            # print(f"Generating chunk {i+1}/{len(chunks)}...")
-            
-            final_wav = self.lux_tts.generate_speech(
-                chunk, 
-                self.encoded_prompt, 
-                num_steps=self.num_steps,
-                t_shift=self.t_shift,
-                speed=self.speed,
-                return_smooth=self.return_smooth
-            )
-            final_wav = final_wav.numpy().squeeze()
-            
-            temp_file = os.path.join(module_dir, f"temp_speech_{int(time.time())}_{i}.wav")
-            sf.write(temp_file, final_wav, 48000)
-            
-            # Put the generated audio file into the queue for immediate playback
-            self.audio_queue.put(temp_file)
-            
-        # Tell the playback thread to stop after processing all items
-        self.audio_queue.put(None)
+        # Play the file using macOS afplay (synchronous)
+        os.system(f"afplay {temp_file}")
         
-        # Wait for all audio playback to finish before returning to prompt
-        playback_thread.join()
+        # Delete the file after playing
+        try:
+            os.remove(temp_file)
+        except OSError:
+            pass
