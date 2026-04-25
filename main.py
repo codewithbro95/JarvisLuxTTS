@@ -39,9 +39,31 @@ while True:
         if text.lower() == 'quit':
             break
 
-        # Split text into chunks using punctuation
-        chunks = re.split(r'(?<=[.,!?])\s+', text)
-        chunks = [c.strip() for c in chunks if c.strip()]
+        # Split text into manageable chunks using punctuation
+        raw_chunks = re.split(r'(?<=[.,!?])\s+', text)
+        chunks = []
+        current_chunk = ""
+        
+        # Threshold: accumulate smaller pieces to avoid choppy, unnatural audio cuts
+        min_chunk_length = 40
+        
+        for c in raw_chunks:
+            c = c.strip()
+            if not c:
+                continue
+                
+            if current_chunk:
+                current_chunk += " " + c
+            else:
+                current_chunk = c
+                
+            # Finish the chunk if it ends with a major punctuation or exceeds the length threshold
+            if len(current_chunk) >= min_chunk_length or current_chunk[-1] in '.!?':
+                chunks.append(current_chunk)
+                current_chunk = ""
+                
+        if current_chunk:
+            chunks.append(current_chunk)
         
         if not chunks:
             continue
@@ -52,6 +74,10 @@ while True:
         player_thread.start()
 
         for i, chunk in enumerate(chunks):
+            # Pad chunk with a period if it lacks punctuation, helping the TTS model not to cut the ending abruptly
+            if not re.search(r'[.,!?]$', chunk):
+                chunk += "."
+                
             print(f"Generating chunk {i+1}/{len(chunks)}: {chunk}")
             final_wav = lux_tts.generate_speech(chunk, encoded_prompt, num_steps=4)
             final_wav = final_wav.numpy().squeeze()
