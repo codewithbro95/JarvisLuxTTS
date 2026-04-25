@@ -18,12 +18,12 @@ class StreamJarvisTTS:
                  model_name='YatharthS/LuxTTS', 
                  device='mps', # mps or cpu
                  prompt_audio=os.path.join(os.path.dirname(__file__), 'sample.mp3'), # sample voice of jarvis
-                 rms=0.01, 
-                 ref_duration=5,
-                 t_shift=0.9,
+                 rms=0.5, 
+                 ref_duration=10,
+                 t_shift=1,
                  speed=0.8,
                  return_smooth=False,
-                 num_steps=4):
+                 num_steps=3):
         
         self.device = device
         self.prompt_audio = prompt_audio
